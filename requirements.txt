@@ -6,5 +6,6 @@ transformers
 huggingface-hub
 loguru
 numpy
+sentence-transformers
 torch
 
