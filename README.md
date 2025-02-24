@@ -1,6 +1,6 @@
 # AI Research Buddy: Your Conversational RAG Sidekick
 
-![AI Research Buddy Logo](https://via.placeholder.com/150?text=AI+Research+Buddy)  
+![Image](https://github.com/user-attachments/assets/fa4f6ef8-029c-46a2-9984-882147c151e5)
 *Unleash the power of research with a twist of AI magic!*  
 
 Welcome to **AI Research Buddy**, a slick, conversational app that dives into the vast ocean of arXiv papers to fetch, summarize, and source the best research on any topic you throw at it—like "RAG" (yep, it’s meta enough to research itself!). Built from the ground up by **Nithin** (that’s me!), this project is a living testament to my mastery of **Retrieval-Augmented Generation (RAG)** and **agents**, blending advanced retrieval tricks with a chatty AI that’s always ready to dig deeper. Whether you’re a student, researcher, or just a curious mind, this buddy’s got your back—all running on a humble MacBook M3 Pro with 8GB RAM as of February 24, 2025!
