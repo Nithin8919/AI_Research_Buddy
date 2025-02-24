@@ -1,3 +1,11 @@
-setuptools
+gradio
+requests
+langchain
+langchain-community
+transformers
+huggingface-hub
+loguru
+numpy
+torch
 
 -e .

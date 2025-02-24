@@ -1,31 +1,33 @@
-# RAG.py
-from langchain.vectorstores import FAISS
+from langchain.vectorstores import Chroma
 from langchain.embeddings import HuggingFaceEmbeddings
+from src.logger import logger
 
-class RAGModule:
-    def __init__(self, embedding_model="all-MiniLM-L6-v2"):
+class RetrievalModule:
+    def __init__(self, embedding_model="all-MiniLM-L6-v2", persist_dir="./chroma_db"):
         self.embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
         self.vector_store = None
+        self.persist_dir = persist_dir  # Persistent storage
 
     def build_vector_store(self, texts):
-        """Build FAISS vector store from a list of texts."""
+        """Build Chroma vector store with better logging."""
         if not texts:
-            print("No texts? RAG’s got nothing to chew on!")
+            logger.warning("No texts provided. Skipping vector store creation.")
             return
-        self.vector_store = FAISS.from_texts(texts, self.embeddings)
-        print("Vector store built—ready to hunt for gold!")
+        
+        self.vector_store = Chroma.from_texts(
+            texts, self.embeddings, persist_directory=self.persist_dir
+        )
+        self.vector_store.persist()
+        logger.info("Chroma vector store successfully built.")
 
     def retrieve_relevant(self, query, k=2):
-        """Retrieve top k relevant documents for the query."""
+        """Fetch top-k relevant documents, logging warnings if store is empty."""
         if not self.vector_store:
-            print("Vector store’s empty—did you forget to build it?")
+            logger.warning("Vector store is empty. Run `build_vector_store` first.")
             return []
+        
         top_docs = self.vector_store.similarity_search(query, k=k)
-        return [doc.page_content for doc in top_docs]
-
-# Test it standalone (optional)
-if __name__ == "__main__":
-    rag = RAGModule()
-    rag.build_vector_store(["AI is cool.", "Deep learning rocks."])
-    results = rag.retrieve_relevant("best AI stuff")
-    print(results)
+        retrieved = [doc.page_content for doc in top_docs] if top_docs else []
+        
+        logger.info(f"Retrieved {len(retrieved)} relevant papers for query: '{query}'.")
+        return retrieved

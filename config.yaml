@@ -1,0 +1,6 @@
+api_url: "http://export.arxiv.org/api/query"
+embedding_model: "all-MiniLM-L6-v2"
+summarizer_model: "facebook/bart-large-cnn"
+max_results: 5
+top_k: 2
+persist_dir: "./chroma_db"

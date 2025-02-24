@@ -1,52 +1,35 @@
-# research_buddy.py
+import random
 from src.data_ingestion import DataIngestion
-from src.RAG import RAGModule
+from src.RAG import RetrievalModule
 from src.AI_agent import ResearchAgent
+from src.logger import logger
 
 class ResearchBuddyPipeline:
-    def __init__(self, config=None):
-        # Default config—customizable via a dict if you want
-        self.config = config or {
-            "api_url": "http://export.arxiv.org/api/query",
-            "embedding_model": "all-MiniLM-L6-v2",
-            "summarizer_model": "facebook/bart-large-cnn",
-            "max_results": 5,
-            "top_k": 2
-        }
-        # Initialize modules with config
-        self.ingestor = DataIngestion(api_url=self.config["api_url"])
-        self.rag = RAGModule(embedding_model=self.config["embedding_model"])
-        self.agent = ResearchAgent(summarizer_model=self.config["summarizer_model"])
-        self.titles = []  # Store titles for reference
-        self.abstracts = []  # Store abstracts for RAG
+    def __init__(self, config):
+        self.config = config
+        self.ingestor = DataIngestion(self.config["api_url"])
+        self.retriever = RetrievalModule(self.config["embedding_model"], self.config["persist_dir"])
+        self.agent = ResearchAgent(self.config["summarizer_model"])
+        self.openers = [
+            "Hold my coffee, I’m diving into this!",
+            "Time to unleash my inner paper monster!",
+            "Buckle up, we’re raiding the research jungle!",
+            "Let’s crank this up to eleven—here we go!"
+        ]
 
-    def run(self, topic, query):
-        """Run the full pipeline: fetch → retrieve → summarize → pick."""
-        print("Research Buddy: Let’s crank up the knowledge machine!")
+    def process_query(self, topic, query):
+        opener = random.choice(self.openers)
+        logger.info(f"Processing query for topic: {topic}")
+
+        titles, abstracts = self.ingestor.fetch_papers(topic, self.config["max_results"])
+        if not abstracts:
+            return f"{opener}\n\nNo research found for '{topic}'. Try a different topic?"
         
-        # Step 1: Fetch papers
-        self.titles, self.abstracts = self.ingestor.fetch_papers(topic, self.config["max_results"])
-        if not self.abstracts:
-            print("No papers fetched—time to cry or try again!")
-            return
+        summaries = self.agent.summarize_papers(abstracts)
+        self.retriever.build_vector_store(summaries)
+        relevant_papers = self.retriever.retrieve_relevant(query, k=self.config["top_k"])
 
-        # Step 2: Build RAG and retrieve
-        self.rag.build_vector_store(self.abstracts)
-        relevant_papers = self.rag.retrieve_relevant(query, k=self.config["top_k"])
-        print(f"Top papers retrieved: {relevant_papers}")
-
-        # Step 3: Summarize and pick best
-        summaries = self.agent.summarize_papers(relevant_papers)
-        best_summary = self.agent.pick_best(summaries)
-
-        # Step 4: Show off the results
-        print("\nResults:")
-        for i, summary in enumerate(summaries, 1):
-            print(f"Paper {i}: {summary}")
-        print(f"Best Pick: {best_summary}")
-        print("Research Buddy: Mission accomplished—go be brilliant!")
-
-# Run the pipeline
-if __name__ == "__main__":
-    pipeline = ResearchBuddyPipeline()
-    pipeline.run(topic="deep learning", query="best deep learning advancements")
+        if not relevant_papers:
+            return f"{opener}\n\nNo relevant results for '{query}'. Try refining your query?"
+        
+        return f"{opener}\n\n" + self.agent.chat_response(None, relevant_papers, topic, query)
