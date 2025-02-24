@@ -8,4 +8,4 @@ loguru
 numpy
 sentence-transformers
 torch
-
+chromadb
