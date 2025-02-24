@@ -8,4 +8,3 @@ loguru
 numpy
 torch
 
--e .
