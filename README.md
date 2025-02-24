@@ -1,7 +1,3 @@
-# AI_Research_BuddyBelow is a polished, comprehensive, and engaging **README.md** file for your **AI_Research_Buddy** project. This documentation is designed to showcase your expertise in **Retrieval-Augmented Generation (RAG)** and **agents**, explain the project’s purpose and functionality, and provide clear instructions for setup and usage. It’s professional yet approachable, perfect for your GitHub repo (`https://github.com/Nithin8919/AI_Research_Buddy`) and Hugging Face Space (`https://huggingface.co/spaces/Nithin89/AI_Reaserch_Buddy` or corrected version).
-
----
-
 # AI Research Buddy: Your Conversational RAG Sidekick
 
 ![AI Research Buddy Logo](https://via.placeholder.com/150?text=AI+Research+Buddy)  
