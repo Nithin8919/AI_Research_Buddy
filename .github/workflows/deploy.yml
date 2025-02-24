@@ -18,7 +18,7 @@ jobs:
         run: |
           git config --global user.email "your-email@example.com"
           git config --global user.name "your-github-username"
-          git clone https://Nithin89:$HF_TOKEN@huggingface.co/spaces/Nithin89/AI_Reaserch_Buddy hf_space
+          git clone https://user:$HF_TOKEN@huggingface.co/spaces/Nithin89/AI_Research_Buddy hf_space
           rsync -av --exclude '.git' . hf_space/
           cd hf_space
           git add .
