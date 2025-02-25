@@ -7,6 +7,7 @@ from langchain.memory import ConversationBufferMemory
 from transformers import pipeline, AutoModelForSequenceClassification, AutoTokenizer
 from loguru import logger
 import numpy as np
+import torch
 
 # --- DataIngestion Class with Query Expansion ---
 class DataIngestion:
@@ -51,7 +52,7 @@ class DataIngestion:
 
 # --- RetrievalModule Class with Reranking ---
 class RetrievalModule:
-    def __init__(self, embedding_model="all-MiniLM-L6-v2", persist_dir="./chroma_db"):
+    def __init__(self, embedding_model="sentence-transformers/all-MiniLM-L6-v2", persist_dir="./chroma_db"):
         self.embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
         self.vector_store = None
         self.persist_dir = persist_dir
@@ -67,14 +68,15 @@ class RetrievalModule:
             texts=abstracts, embedding=self.embeddings, metadatas=metadatas, persist_directory=self.persist_dir
         )
         self.vector_store.persist()
-        logger.info("Chroma vector store built.")
+        logger.info("Chroma vector store built and persisted.")
 
     def rerank(self, query, retrieved):
         if not retrieved:
             return retrieved
         inputs = [f"{query} [SEP] {doc[0]}" for doc in retrieved]
         tokenized = self.reranker_tokenizer(inputs, return_tensors="pt", padding=True, truncation=True, max_length=512)
-        scores = self.reranker_model(**tokenized).logits.squeeze().detach().numpy()
+        with torch.no_grad():
+            scores = self.reranker_model(**tokenized).logits.squeeze().detach().numpy()
         ranked_indices = np.argsort(scores)[::-1]
         return [retrieved[i] for i in ranked_indices[:3]]
 
@@ -100,7 +102,7 @@ def process_query(query):
         # Check chat history for follow-up context
         history = memory.load_memory_variables({})["chat_history"]
         if history and "more" in query.lower():
-            last_output = history[-1]["content"] if history else ""
+            last_output = history[-1].content if history else ""  # Fixed AIMessage access
             context = "\n".join([line for line in last_output.split("\n") if "Summary" in line])
         else:
             # Fetch and retrieve papers for new query
@@ -139,8 +141,9 @@ demo = gr.Interface(
     fn=process_query,
     inputs=gr.Textbox(label="Enter your research query (e.g., 'RAG' or 'Tell me more')"),
     outputs=gr.Textbox(label="Result"),
-    title="AI_Research_Buddy",
+    title="AI Research Buddy",
     description="Retrieve summaries of the best papers on your topic with their sources. Ask follow-ups like 'Tell me more.'"
 )
 
-demo.launch()
+if __name__ == "__main__":
+    demo.launch()
