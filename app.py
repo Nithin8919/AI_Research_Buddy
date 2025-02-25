@@ -139,7 +139,7 @@ demo = gr.Interface(
     fn=process_query,
     inputs=gr.Textbox(label="Enter your research query (e.g., 'RAG' or 'Tell me more')"),
     outputs=gr.Textbox(label="Result"),
-    title="Conversational RAG Demo",
+    title="AI_Research_Buddy",
     description="Retrieve summaries of the best papers on your topic with their sources. Ask follow-ups like 'Tell me more.'"
 )
 
